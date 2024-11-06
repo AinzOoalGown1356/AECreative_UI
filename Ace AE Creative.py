@@ -1,54 +1,14 @@
 import os
 import json
 from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QComboBox,
-                             QSlider, QPushButton, QFileDialog, QMessageBox, QGroupBox)
+                             QSlider, QPushButton, QFileDialog, QGroupBox)
 from PyQt5.QtCore import Qt
 import sys
-from supabase import create_client, Client
-
-# Supabase credentials
-SUPABASE_URL = "https://fmjkuxaklulgxxudyeue.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZtamt1eGFrbHVsZ3h4dWR5ZXVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzA4Njg2NTEsImV4cCI6MjA0NjQ0NDY1MX0.7SoGBP4Gw5vsUYOXpg1zXUA_smU_LClRzb01Z-hVElo"
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Directory to save profiles
 PROFILES_DIR = os.path.join(os.path.dirname(__file__), "profiles")
 if not os.path.exists(PROFILES_DIR):
     os.makedirs(PROFILES_DIR)
-
-class LoginApp(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.initUI()
-
-    def initUI(self):
-        self.setWindowTitle("License Key Login")
-        self.setGeometry(100, 100, 300, 200)
-
-        layout = QVBoxLayout()
-        self.label = QLabel("Enter License Key:")
-        self.license_input = QLineEdit()
-        self.license_input.setPlaceholderText("License Key")
-        self.login_button = QPushButton("Login")
-        self.login_button.clicked.connect(self.validate_license)
-
-        layout.addWidget(self.label)
-        layout.addWidget(self.license_input)
-        layout.addWidget(self.login_button)
-        self.setLayout(layout)
-
-    def validate_license(self):
-        entered_key = self.license_input.text()
-        response = supabase.table("licenses").select("*").eq("license_key", entered_key).execute()
-        if response.data and response.data[0]["is_active"]:
-            self.open_main_app()
-        else:
-            QMessageBox.warning(self, "Access Denied", "Invalid or inactive license key.")
-
-    def open_main_app(self):
-        self.close()
-        self.main_app = ScriptSettingsApp()
-        self.main_app.show()
 
 class ScriptSettingsApp(QWidget):
     def __init__(self):
@@ -90,7 +50,6 @@ class ScriptSettingsApp(QWidget):
         layout.addWidget(enable_combo)
 
         if not no_slider:
-            # Additional sliders for specific scripts with adjustable durations
             if title == "Switch Like Rapid Fire":
                 layout.addWidget(QLabel("Fire duration (iterations)"))
                 fire_duration_slider = QSlider(Qt.Horizontal)
@@ -135,8 +94,8 @@ class ScriptSettingsApp(QWidget):
 # Main Application
 def main():
     app = QApplication(sys.argv)
-    login_app = LoginApp()
-    login_app.show()
+    main_app = ScriptSettingsApp()  # Open the main application directly
+    main_app.show()
     sys.exit(app.exec_())
 
 if __name__ == "__main__":
