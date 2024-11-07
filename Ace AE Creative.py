@@ -1,5 +1,6 @@
 import os
 import json
+import subprocess
 from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QComboBox,
                              QCheckBox, QSlider, QPushButton, QTabWidget, QFileDialog, QMessageBox, QGroupBox)
 from PyQt5.QtCore import Qt
@@ -89,6 +90,10 @@ class ScriptSettingsApp(QWidget):
         enable_combo.addItems(["Disabled", "Enabled"])
         layout.addWidget(enable_combo)
 
+        # Connect the "Anti Knife Lunge" setting to trigger the script
+        if title == "Anti Knife Lunge":
+            enable_combo.currentTextChanged.connect(lambda value: self.run_anti_lunge_script(value))
+
         # Additional specific sliders based on the script requirements
         if title == "Switch Like Rapid Fire":
             layout.addWidget(QLabel("Fire duration (iterations)"))
@@ -132,6 +137,24 @@ class ScriptSettingsApp(QWidget):
 
         group_box.setLayout(layout)
         return group_box
+
+    def run_anti_lunge_script(self, value):
+        """Run or stop the anti-lunge script based on the selected value."""
+        # Path to the script in the extracted GitHub repository
+        script_path = os.path.join(os.path.dirname(__file__), "AECreative_UI-main", "Creative SCRIPTS", "Anti Knife Lunge.py")
+        
+        if value == "Enabled":
+            try:
+                self.anti_lunge_process = subprocess.Popen([sys.executable, script_path])
+                print("Anti-lunge script started.")
+            except Exception as e:
+                print(f"Failed to start anti-lunge script: {e}")
+                QMessageBox.critical(self, "Error", f"Failed to start anti-lunge script: {e}")
+        elif value == "Disabled":
+            if hasattr(self, 'anti_lunge_process'):
+                self.anti_lunge_process.terminate()
+                print("Anti-lunge script stopped.")
+                del self.anti_lunge_process
 
     def save_settings(self):
         """Save settings to a profile."""
